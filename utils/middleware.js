@@ -12,18 +12,27 @@ const jwt = require("jsonwebtoken");
 // };
 
 const userExtractor = async (req, res, next) => {
-  const token = await req.get("authorization");
-  const verify = jwt.verify(token, process.env.SECRET);
-  const getUser = await User.findById(verify.id);
-  if (!token) {
-    return (req.user = null);
-  }
+  try {
+    const token = await req.get("Authorization");
+    const verify = jwt.verify(token, process.env.SECRET);
+    const getUser = await User.findById(verify.id);
+    if (!token) {
+      req.user = null;
+      next();
+    }
 
-  next();
-  if (getUser) {
-    return (req.user = getUser);
-  } else {
-    return (req.user = null);
+    if (getUser) {
+      console.log("success");
+
+      req.user = getUser;
+      next();
+    } else {
+      req.user = null;
+      next();
+    }
+  } catch (error) {
+    req.user = null;
+    next();
   }
 };
 
