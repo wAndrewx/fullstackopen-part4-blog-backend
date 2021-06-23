@@ -8,14 +8,16 @@ blogRouter.get("/", async (request, response) => {
     name: 1,
     id: 1,
   });
-  response.json(getBlogs);
+  return response.json(getBlogs);
 });
 
 blogRouter.post("/", async (req, res) => {
   const body = req.body;
   const verify = req.user;
+  console.log(verify);
 
-  if (!verify) {
+  if (verify._id.toString() === null) {
+    // auth.id is equal to request id
     return res.status(400).send("No Token m8 or user invalid");
   }
 
@@ -24,25 +26,25 @@ blogRouter.post("/", async (req, res) => {
     author: body.author,
     url: body.url,
     likes: body.likes,
-    user: user._id,
+    user: verify._id,
   });
 
   try {
     const blogSave = await blog.save();
-    user.blogs = user.blogs.concat(blogSave.id);
-    await user.save();
-    return res.status(201).send("SUCCESS");
+    verify.blogs = verify.blogs.concat(blogSave.id); // saving blog to users blogs
+    await verify.save();
+    return res.status(201).send("SUCCESS TO POST");
   } catch (error) {
-    return res.status(400).send("FAIL");
+    return res.status(404).send("FAILED TO POST");
   }
 });
 
 blogRouter.delete("/:id", async (req, res, next) => {
   const getBlogUser = await Blog.findById(req.params.id);
   const verify = req.user;
-  console.log(verify);
+  console.log(getBlogUser);
 
-  if (!verify) {
+  if (!verify || !getBlogUser) {
     return res.status(400).send("Not a verified user");
   }
 

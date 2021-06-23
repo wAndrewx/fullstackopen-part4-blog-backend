@@ -4,23 +4,20 @@ const User = require("../models/user");
 const bcrypt = require("bcryptjs");
 
 login.post("/", async (req, res, next) => {
-  const body = req.body;
-  console.log(body);
-
-  if (!body) {
-    return res.status(400).json({ message: "No credentials given" });
-  }
-
-  const getUser = await User.findOne({ username: req.body.username });//here
   try {
-      
-    const correctPassword = await bcrypt.compare(//here
+    const body = req.body;
+    if (body.username.length < 1 || body.password.length < 1) {
+      return res.json({ error: "No credentials given" });
+    }
+
+    const getUser = await User.findOne({ username: req.body.username });
+    const correctPassword = await bcrypt.compare(
+      //here
       body.password,
       getUser.passwordHash
     );
     if (!getUser || !correctPassword) {
-        
-      return res.status(400).send("Wrong Credentials");
+      return res.json({ error: "Wrong Credentials" });
     }
 
     const userToken = {
@@ -31,7 +28,7 @@ login.post("/", async (req, res, next) => {
     const token = jwt.sign(userToken, process.env.SECRET);
     return res.send({ token, username: body.username });
   } catch (err) {
-    return res.send("Somethingwong");
+    return res.send("Something wrong");
   }
 });
 

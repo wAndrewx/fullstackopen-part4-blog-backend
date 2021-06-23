@@ -27,15 +27,16 @@ userRoute.post("/", async (req, res, next) => {
   if (body.username < 3) {
     return res.status(400).send("Username is too short");
   }
-
   const getBlog = await Blog.findById(body.id);
-
+  if(!getBlog){
+    return res.status(404).send("No Blogs exist")
+  }
   const passwordHash = await bcrypt.hash(body.password, 10);
   const userObj = {
     username: body.username,
     name: body.name,
     passwordHash: passwordHash,
-    blogs: getBlog._id,
+    blogs: getBlog.id,
   };
   const newUser = new User(userObj);
   return res.send(await newUser.save());
