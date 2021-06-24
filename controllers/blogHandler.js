@@ -62,11 +62,14 @@ blogRouter.delete("/:id", async (req, res, next) => {
 
 blogRouter.put("/:id", async (req, res, next) => {
   try {
+    if (!req.body.likes) {
+      return res.status(404).send("No likes provided");
+    }
     let newLikes = { likes: req.body.likes };
     await Blog.findByIdAndUpdate(String(req.params.id), newLikes);
-    res.status(200).send("yeah dawg u updated the likes");
+    res.status(200).send("Success likes updated");
   } catch (err) {
-    res.status(400).json(err);
+    res.status(400).json(err.message);
   }
 });
 
